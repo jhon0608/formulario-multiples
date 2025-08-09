@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1754769436000",
+    "nombre": "carlos pit",
+    "correo": "jhonzeca123456@gmail.com",
+    "edad": "23",
+    "celular": "67543211",
+    "plataforma": "maclean",
+    "estado": "pendiente",
+    "fechaRegistro": "2025-08-09",
+    "fechaInicio": null,
+    "fechaDesactivacion": null
+  },
+  {
+    "id": "1754771795100",
+    "nombre": "omar sosa panay ",
+    "correo": "macleanjhon8@gmail.com",
+    "edad": "50",
+    "celular": "61559284",
+    "plataforma": "runningpips",
+    "estado": "pendiente",
+    "fechaRegistro": "2025-08-09",
+    "fechaInicio": null,
+    "fechaDesactivacion": null
+  },
+  {
+    "id": "1754772933007",
+    "nombre": "omar sosa panay ",
+    "correo": "macleanjhon8@gmail.com",
+    "edad": "50",
+    "celular": "61559284",
+    "plataforma": "maclean",
+    "estado": "pendiente",
+    "fechaRegistro": "2025-08-09",
+    "fechaInicio": null,
+    "fechaDesactivacion": null
+  },
+  {
+    "id": "1754773060043",
+    "nombre": "omar sosa panay ",
+    "correo": "macleanjhon8@gmail.com",
+    "edad": "50",
+    "celular": "61559284",
+    "plataforma": "runningpips",
+    "estado": "pendiente",
+    "fechaRegistro": "2025-08-09",
+    "fechaInicio": null,
+    "fechaDesactivacion": null
+  }
+]
