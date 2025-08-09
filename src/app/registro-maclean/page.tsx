@@ -73,7 +73,7 @@ export default function RegistroMaclean() {
           </Link>
           <div className="text-lg font-semibold text-yellow-200">Registro IA Maclean</div>
         </div>
-      </nav>
+      </nav> 
 
       <main className="flex items-center justify-center px-4 pb-16">
         <div className="w-full max-w-md">
