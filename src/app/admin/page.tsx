@@ -116,10 +116,7 @@ export default function AdminPanel() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          id,
-          ...registroActualizado
-        }),
+        body: JSON.stringify(registroActualizado),
       });
 
       if (response.ok) {

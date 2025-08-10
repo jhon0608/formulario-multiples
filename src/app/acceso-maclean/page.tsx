@@ -3,6 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 
+interface Registro {
+  id: string;
+  correo: string;
+  plataforma: string;
+  nombre: string;
+  edad: string;
+  celular: string;
+  fechaRegistro: string;
+}
+
 export default function AccesoMaclean() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -18,8 +28,8 @@ export default function AccesoMaclean() {
       const response = await fetch('/api/registros');
       const registros = await response.json();
       
-      const usuario = registros.find((reg: any) => 
-        reg.correo.toLowerCase() === email.toLowerCase() && 
+      const usuario = registros.find((reg: Registro) =>
+        reg.correo.toLowerCase() === email.toLowerCase() &&
         reg.plataforma === 'maclean'
       );
 

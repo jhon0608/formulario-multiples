@@ -3,8 +3,17 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+interface User {
+  nombre: string;
+  email: string;
+  edad: string;
+  celular: string;
+  fechaRegistro: string;
+  isAdmin?: boolean;
+}
+
 export default function IAMacleanDashboard() {
-  const [user, setUser] = useState<any>({
+  const [user, setUser] = useState<User>({
     nombre: "Usuario",
     email: "usuario@ejemplo.com",
     edad: "25",

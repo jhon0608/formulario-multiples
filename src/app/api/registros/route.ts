@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+interface Registro {
+  id: string;
+  nombre: string;
+  correo: string;
+  edad: string;
+  celular: string;
+  plataforma: string;
+  fechaRegistro: string;
+  fechaContacto?: string | null;
+  fechaCierre?: string | null;
+}
+
 const DATA_FILE = path.join(process.cwd(), 'data', 'registros.json');
 
 // Asegurar que el directorio data existe
@@ -28,7 +40,7 @@ function readRegistros() {
 }
 
 // Escribir registros al archivo
-function writeRegistros(registros: any[]) {
+function writeRegistros(registros: Registro[]) {
   ensureDataDir();
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(registros, null, 2));
@@ -99,7 +111,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const registros = readRegistros();
-    const index = registros.findIndex((r: any) => r.id === id);
+    const index = registros.findIndex((r: Registro) => r.id === id);
 
     if (index === -1) {
       return NextResponse.json({ error: 'Registro no encontrado' }, { status: 404 });
@@ -154,7 +166,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const registros = readRegistros();
-    const filteredRegistros = registros.filter((r: any) => r.id !== id);
+    const filteredRegistros = registros.filter((r: Registro) => r.id !== id);
 
     if (filteredRegistros.length === registros.length) {
       return NextResponse.json({ error: 'Registro no encontrado' }, { status: 404 });
