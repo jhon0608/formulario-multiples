@@ -9,17 +9,29 @@
     "estado": "pagos_pendientes",
     "fechaRegistro": "2025-08-09",
     "fechaInicio": "2025-08-09",
-    "fechaDesactivacion": "2025-08-09"
+    "fechaDesactivacion": "2025-08-10"
   },
   {
-    "id": "1754777636203",
+    "id": "1754854675389",
     "nombre": "omar sosa panay ",
     "correo": "macleanjhon8@gmail.com",
     "edad": "50",
     "celular": "61559284",
     "plataforma": "maclean",
     "estado": "pendiente",
-    "fechaRegistro": "2025-08-09",
+    "fechaRegistro": "2025-08-10",
+    "fechaInicio": null,
+    "fechaDesactivacion": null
+  },
+  {
+    "id": "1754854723557",
+    "nombre": "bella sosa",
+    "correo": "bella12345@gmail.com",
+    "edad": "45",
+    "celular": "65758456",
+    "plataforma": "maclean",
+    "estado": "pendiente",
+    "fechaRegistro": "2025-08-10",
     "fechaInicio": null,
     "fechaDesactivacion": null
   }
