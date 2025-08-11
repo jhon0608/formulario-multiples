@@ -62,8 +62,8 @@ export default function Home() {
 
       {/* Cards Section */}
       <div className="relative px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 auto-rows-fr">
             
             {/* RunningPips Academy Card */}
             <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 p-8 shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-blue-500/25">
