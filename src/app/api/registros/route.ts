@@ -33,7 +33,7 @@ function calcularFechaValidacion(fechaInicio: Date): Date {
 }
 
 // Función para verificar si el usuario está activo
-function isUsuarioActivo(usuario: any): boolean {
+function isUsuarioActivo(usuario: Usuario): boolean {
   const ahora = new Date();
   const fechaInicio = new Date(usuario.fechaInicio);
   const fechaValidacion = new Date(usuario.fechaValidacion);
@@ -51,18 +51,21 @@ export async function GET() {
     const usuarios = await collection.find({}).toArray();
 
     // Convertir _id a string y agregar estado de activación
-    const usuariosFormateados = usuarios.map(usuario => ({
-      ...usuario,
-      _id: usuario._id.toString(),
-      id: usuario._id.toString(),
-      estadoActivo: isUsuarioActivo(usuario), // Calcular si está activo
-      // Para compatibilidad con el panel admin existente
-      nombre: usuario.nombreCompleto,
-      correo: usuario.correo,
-      plataforma: usuario.plataforma,
-      fechaRegistro: usuario.created_at ? new Date(usuario.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      estado: isUsuarioActivo(usuario) ? 'activo' : 'inactivo'
-    }));
+    const usuariosFormateados = usuarios.map(usuario => {
+      const usuarioTyped = usuario as unknown as Usuario;
+      return {
+        ...usuario,
+        _id: usuario._id.toString(),
+        id: usuario._id.toString(),
+        estadoActivo: isUsuarioActivo(usuarioTyped), // Calcular si está activo
+        // Para compatibilidad con el panel admin existente
+        nombre: usuario.nombreCompleto,
+        correo: usuario.correo,
+        plataforma: usuario.plataforma,
+        fechaRegistro: usuario.created_at ? new Date(usuario.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        estado: isUsuarioActivo(usuarioTyped) ? 'activo' : 'inactivo'
+      };
+    });
 
     return NextResponse.json(usuariosFormateados);
   } catch (error) {
@@ -160,7 +163,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Preparar la actualización
-    let updateData: any = {
+    const updateData: Record<string, unknown> = {
       ...otrosCampos,
       updated_at: new Date()
     };
@@ -183,14 +186,20 @@ export async function PUT(request: NextRequest) {
     // Obtener el usuario actualizado
     const usuarioActualizado = await collection.findOne({ _id: objectId });
 
+    if (!usuarioActualizado) {
+      return NextResponse.json({ error: 'Error al obtener usuario actualizado' }, { status: 500 });
+    }
+
+    const usuarioActualizadoTyped = usuarioActualizado as unknown as Usuario;
+
     return NextResponse.json({
       success: true,
       message: 'Usuario actualizado exitosamente',
       usuario: {
         ...usuarioActualizado,
-        id: usuarioActualizado?._id.toString(),
+        id: usuarioActualizado._id.toString(),
         _id: undefined,
-        estadoActivo: isUsuarioActivo(usuarioActualizado)
+        estadoActivo: isUsuarioActivo(usuarioActualizadoTyped)
       }
     });
   } catch (error) {

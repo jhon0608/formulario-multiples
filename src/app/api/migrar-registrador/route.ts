@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import clientPromise from '../../../../lib/mongodb';
 
 // Obtener la colección de usuarios
@@ -9,7 +9,7 @@ async function getUsuariosCollection() {
 }
 
 // POST - Migrar usuarios existentes para agregar campo registradoPor
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const collection = await getUsuariosCollection();
     

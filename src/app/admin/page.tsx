@@ -57,37 +57,36 @@ export default function AdminPanel() {
     }
   };
 
-  // Función para filtrar usuarios
-  const filtrarUsuarios = () => {
-    let usuariosFiltrados = usuarios;
-
-    // Filtrar por búsqueda (nombre o email)
-    if (busqueda.trim()) {
-      usuariosFiltrados = usuariosFiltrados.filter(usuario =>
-        usuario.nombreCompleto?.toLowerCase().includes(busqueda.toLowerCase()) ||
-        usuario.correo?.toLowerCase().includes(busqueda.toLowerCase())
-      );
-    }
-
-    // Filtrar por plataforma
-    if (filtroPlataforma !== 'todas') {
-      usuariosFiltrados = usuariosFiltrados.filter(usuario =>
-        usuario.plataforma === filtroPlataforma
-      );
-    }
-
-    // Filtrar por registrador
-    if (filtroRegistrador !== 'todos') {
-      usuariosFiltrados = usuariosFiltrados.filter(usuario =>
-        usuario.registradoPor === filtroRegistrador
-      );
-    }
-
-    setUsuariosFiltrados(usuariosFiltrados);
-  };
-
   // Efecto para filtrar cuando cambian los criterios
   React.useEffect(() => {
+    const filtrarUsuarios = () => {
+      let usuariosFiltrados = usuarios;
+
+      // Filtrar por búsqueda (nombre o email)
+      if (busqueda.trim()) {
+        usuariosFiltrados = usuariosFiltrados.filter(usuario =>
+          usuario.nombreCompleto?.toLowerCase().includes(busqueda.toLowerCase()) ||
+          usuario.correo?.toLowerCase().includes(busqueda.toLowerCase())
+        );
+      }
+
+      // Filtrar por plataforma
+      if (filtroPlataforma !== 'todas') {
+        usuariosFiltrados = usuariosFiltrados.filter(usuario =>
+          usuario.plataforma === filtroPlataforma
+        );
+      }
+
+      // Filtrar por registrador
+      if (filtroRegistrador !== 'todos') {
+        usuariosFiltrados = usuariosFiltrados.filter(usuario =>
+          usuario.registradoPor === filtroRegistrador
+        );
+      }
+
+      setUsuariosFiltrados(usuariosFiltrados);
+    };
+
     filtrarUsuarios();
   }, [busqueda, filtroPlataforma, filtroRegistrador, usuarios]);
 

@@ -52,7 +52,7 @@ export default function RicardoRegistro() {
       } else {
         setMessage(`❌ Error: ${data.error || 'Error al registrar usuario'}`);
       }
-    } catch (error) {
+    } catch {
       setMessage('❌ Error de conexión');
     } finally {
       setLoading(false);

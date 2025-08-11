@@ -3,22 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 
-interface Registro {
-  id: string;
-  correo: string;
-  plataforma: string;
-  nombre?: string;
-  nombreCompleto?: string;
-  edad: string;
-  celular?: string;
-  fechaRegistro: string;
-  activado?: boolean;
-  estado?: string;
-  estadoActivo?: boolean;
-  fechaInicio?: string;
-  fechaValidacion?: string;
-}
-
 export default function AccesoRunningPips() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);

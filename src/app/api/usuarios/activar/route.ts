@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '../../../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
+interface Usuario {
+  _id?: ObjectId;
+  correo: string;
+  nombreCompleto: string;
+  contrasena: string;
+  edad: string;
+  fechaInicio: Date;
+  fechaValidacion: Date;
+  activado: boolean;
+  plataforma: string;
+  registradoPor: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
+
 // Obtener la colección de usuarios
 async function getUsuariosCollection() {
   const client = await clientPromise;
@@ -10,14 +25,14 @@ async function getUsuariosCollection() {
 }
 
 // Función para verificar si el usuario está activo
-function isUsuarioActivo(usuario: any): boolean {
+function isUsuarioActivo(usuario: Usuario): boolean {
   const ahora = new Date();
   const fechaInicio = new Date(usuario.fechaInicio);
   const fechaValidacion = new Date(usuario.fechaValidacion);
-  
+
   // Debe estar activado manualmente Y dentro del período válido
-  return usuario.activado && 
-         ahora >= fechaInicio && 
+  return usuario.activado &&
+         ahora >= fechaInicio &&
          ahora <= fechaValidacion;
 }
 
@@ -36,7 +51,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const collection = await getUsuariosCollection();
-    const objectId = new ObjectId(id);
+    const objectId = ObjectId.createFromHexString(id);
 
     // Buscar el usuario existente
     const usuarioExistente = await collection.findOne({ _id: objectId });
@@ -48,8 +63,8 @@ export async function PUT(request: NextRequest) {
     // Actualizar estado de activación
     const result = await collection.updateOne(
       { _id: objectId },
-      { 
-        $set: { 
+      {
+        $set: {
           activado: activado,
           updated_at: new Date()
         }
@@ -63,18 +78,24 @@ export async function PUT(request: NextRequest) {
     // Obtener el usuario actualizado
     const usuarioActualizado = await collection.findOne({ _id: objectId });
 
+    if (!usuarioActualizado) {
+      return NextResponse.json({ error: 'Error al obtener usuario actualizado' }, { status: 500 });
+    }
+
+    const usuarioTyped = usuarioActualizado as unknown as Usuario;
+
     return NextResponse.json({
       success: true,
       message: `Usuario ${activado ? 'activado' : 'desactivado'} exitosamente`,
       usuario: {
         ...usuarioActualizado,
-        id: usuarioActualizado?._id.toString(),
+        id: usuarioActualizado._id.toString(),
         _id: undefined,
-        estadoActivo: isUsuarioActivo(usuarioActualizado),
+        estadoActivo: isUsuarioActivo(usuarioTyped),
         // Información adicional para el admin
-        fechaInicio: usuarioActualizado?.fechaInicio,
-        fechaValidacion: usuarioActualizado?.fechaValidacion,
-        diasRestantes: Math.ceil((new Date(usuarioActualizado?.fechaValidacion).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+        fechaInicio: usuarioActualizado.fechaInicio,
+        fechaValidacion: usuarioActualizado.fechaValidacion,
+        diasRestantes: Math.ceil((new Date(usuarioActualizado.fechaValidacion).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
       }
     });
   } catch (error) {
@@ -94,7 +115,7 @@ export async function GET(request: NextRequest) {
     }
 
     const collection = await getUsuariosCollection();
-    const objectId = new ObjectId(id);
+    const objectId = ObjectId.createFromHexString(id);
 
     const usuario = await collection.findOne({ _id: objectId });
 
@@ -102,6 +123,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
+    const usuarioTyped = usuario as unknown as Usuario;
     const ahora = new Date();
     const fechaInicio = new Date(usuario.fechaInicio);
     const fechaValidacion = new Date(usuario.fechaValidacion);
@@ -114,7 +136,7 @@ export async function GET(request: NextRequest) {
       edad: usuario.edad,
       plataforma: usuario.plataforma,
       activado: usuario.activado,
-      estadoActivo: isUsuarioActivo(usuario),
+      estadoActivo: isUsuarioActivo(usuarioTyped),
       fechaInicio: usuario.fechaInicio,
       fechaValidacion: usuario.fechaValidacion,
       diasRestantes: diasRestantes,

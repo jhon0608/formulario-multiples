@@ -28,15 +28,15 @@ export const isStrongPassword = (password: string): boolean => {
 };
 
 // Generar token JWT (para futuras mejoras)
-export const generateToken = (payload: any): string => {
+export const generateToken = (payload: Record<string, unknown>): string => {
   // Implementar JWT en el futuro
   return btoa(JSON.stringify(payload));
 };
 
 // Verificar token JWT
-export const verifyToken = (token: string): any => {
+export const verifyToken = (token: string): Record<string, unknown> | null => {
   try {
-    return JSON.parse(atob(token));
+    return JSON.parse(atob(token)) as Record<string, unknown>;
   } catch {
     return null;
   }

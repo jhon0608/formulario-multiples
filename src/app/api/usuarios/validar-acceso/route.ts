@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '../../../../../lib/mongodb';
-import { ObjectId } from 'mongodb';
+
+interface Usuario {
+  _id?: string;
+  correo: string;
+  nombreCompleto: string;
+  nombre?: string;
+  edad: string;
+  celular?: string;
+  fechaRegistro?: string;
+  fechaInicio: Date;
+  fechaValidacion: Date;
+  activado: boolean;
+  plataforma: string;
+}
 
 // Función para verificar si un usuario está activo
-function isUsuarioActivo(usuario: any): boolean {
+function isUsuarioActivo(usuario: Usuario): boolean {
   if (!usuario || !usuario.activado) {
     return false;
   }
@@ -45,7 +58,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar si el usuario está activo
-    if (!isUsuarioActivo(usuario)) {
+    const usuarioTyped = usuario as unknown as Usuario;
+    if (!isUsuarioActivo(usuarioTyped)) {
       return NextResponse.json(
         { success: false, message: 'Tu período de acceso ha expirado. Contacta al administrador para renovar tu suscripción.' },
         { status: 403 }
