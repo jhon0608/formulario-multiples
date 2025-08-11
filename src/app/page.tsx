@@ -63,7 +63,7 @@ export default function Home() {
       {/* Cards Section */}
       <div className="relative px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             
             {/* RunningPips Academy Card */}
             <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 p-8 shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-blue-500/25">
@@ -162,6 +162,48 @@ export default function Home() {
                     Acceder
                   </Link>
                 </div>
+              </div>
+            </div>
+
+            {/* Ricardo Prescott Card */}
+            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-600 to-emerald-700 p-8 shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-green-500/25">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-400/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+              <div className="relative">
+                <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 backdrop-blur-sm">
+                  <svg className="h-8 w-8 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                </div>
+                <h3 className="mb-4 text-2xl font-bold text-white">Registro Especial</h3>
+                <p className="mb-6 text-green-100">
+                  Acceso directo para registro en ambas plataformas con asistencia personalizada.
+                </p>
+                <ul className="mb-8 space-y-2 text-green-100">
+                  <li className="flex items-center">
+                    <svg className="mr-2 h-4 w-4 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Registro en ambas plataformas
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="mr-2 h-4 w-4 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Asistencia personalizada
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="mr-2 h-4 w-4 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Activación prioritaria
+                  </li>
+                </ul>
+                <Link
+                  href="/ricardo"
+                  className="w-full inline-flex items-center justify-center rounded-xl bg-white px-4 py-3 text-base font-semibold text-green-600 transition-all duration-200 hover:bg-green-50 hover:scale-105"
+                >
+                  Acceder al Registro
+                </Link>
               </div>
             </div>
           </div>
