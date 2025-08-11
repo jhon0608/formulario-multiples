@@ -7,10 +7,16 @@ interface Registro {
   id: string;
   correo: string;
   plataforma: string;
-  nombre: string;
+  nombre?: string;
+  nombreCompleto?: string;
   edad: string;
-  celular: string;
+  celular?: string;
   fechaRegistro: string;
+  activado?: boolean;
+  estado?: string;
+  estadoActivo?: boolean;
+  fechaInicio?: string;
+  fechaValidacion?: string;
 }
 
 export default function AccesoRunningPips() {
@@ -24,29 +30,35 @@ export default function AccesoRunningPips() {
     setError("");
 
     try {
-      // Buscar el usuario en la base de datos
-      const response = await fetch('/api/registros');
-      const registros = await response.json();
-      
-      const usuario = registros.find((reg: Registro) =>
-        reg.correo.toLowerCase() === email.toLowerCase() &&
-        reg.plataforma === 'runningpips'
-      );
+      // Validar acceso usando el endpoint correcto
+      const response = await fetch('/api/usuarios/validar-acceso', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          correo: email,
+          plataforma: 'runningpips'
+        })
+      });
 
-      if (usuario) {
+      const data = await response.json();
+
+      if (data.success) {
         // Guardar datos del usuario en localStorage
         localStorage.setItem('runningpips_user', JSON.stringify({
-          nombre: usuario.nombre,
-          email: usuario.correo,
-          edad: usuario.edad,
-          celular: usuario.celular,
-          fechaRegistro: new Date(usuario.fechaRegistro).toLocaleDateString()
+          id: data.usuario.id,
+          nombre: data.usuario.nombreCompleto || data.usuario.nombre,
+          email: data.usuario.correo,
+          edad: data.usuario.edad,
+          celular: data.usuario.celular || '',
+          fechaRegistro: data.usuario.fechaRegistro ? new Date(data.usuario.fechaRegistro).toLocaleDateString() : ''
         }));
-        
+
         // Redirigir al dashboard
         window.location.href = '/runningpips/dashboard';
       } else {
-        setError("No encontramos tu registro. ¿Ya te registraste en RunningPips Academy?");
+        setError(data.message || "Error de acceso");
       }
     } catch (error) {
       console.error('Error:', error);

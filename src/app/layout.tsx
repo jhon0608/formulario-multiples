@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,8 +15,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Plataformas de Registro - RunningPips Academy & IA Maclean",
   description: "Registrate en RunningPips Academy para aprender trading o en IA Maclean para soluciones de inteligencia artificial",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
-  themeColor: "#1e293b",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -32,6 +30,14 @@ export const metadata: Metadata = {
     "msapplication-TileColor": "#1e293b",
     "msapplication-tap-highlight": "no"
   }
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#1e293b',
 };
 
 export default function RootLayout({

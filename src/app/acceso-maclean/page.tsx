@@ -3,16 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 
-interface Registro {
-  id: string;
-  correo: string;
-  plataforma: string;
-  nombre: string;
-  edad: string;
-  celular: string;
-  fechaRegistro: string;
-}
-
 export default function AccesoMaclean() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -24,29 +14,39 @@ export default function AccesoMaclean() {
     setError("");
 
     try {
-      // Buscar el usuario en la base de datos
-      const response = await fetch('/api/registros');
-      const registros = await response.json();
-      
-      const usuario = registros.find((reg: Registro) =>
-        reg.correo.toLowerCase() === email.toLowerCase() &&
-        reg.plataforma === 'maclean'
-      );
+      // Validar acceso usando el endpoint correcto
+      const response = await fetch('/api/usuarios/validar-acceso', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          correo: email,
+          plataforma: 'maclean'
+        })
+      });
 
-      if (usuario) {
+      const data = await response.json();
+
+      if (data.success) {
+        // Verificar si es el usuario especial
+        const isSpecialUser = email === 'macleanjhon8@gmail.com';
+
         // Guardar datos del usuario en localStorage
         localStorage.setItem('maclean_user', JSON.stringify({
-          nombre: usuario.nombre,
-          email: usuario.correo,
-          edad: usuario.edad,
-          celular: usuario.celular,
-          fechaRegistro: new Date(usuario.fechaRegistro).toLocaleDateString()
+          id: data.usuario.id,
+          nombre: data.usuario.nombreCompleto || data.usuario.nombre,
+          email: data.usuario.correo,
+          edad: data.usuario.edad,
+          celular: data.usuario.celular || '',
+          fechaRegistro: data.usuario.fechaRegistro ? new Date(data.usuario.fechaRegistro).toLocaleDateString() : '',
+          isAdmin: isSpecialUser // Marcar como admin si es el usuario especial
         }));
-        
+
         // Redirigir al dashboard
         window.location.href = '/ia-maclean/dashboard';
       } else {
-        setError("No encontramos tu registro. ¿Ya te registraste en IA Maclean?");
+        setError(data.message || "No encontramos tu registro. ¿Ya te registraste en IA Maclean?");
       }
     } catch (error) {
       console.error('Error:', error);

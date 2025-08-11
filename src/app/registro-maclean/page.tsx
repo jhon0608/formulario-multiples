@@ -5,8 +5,9 @@ import Link from "next/link";
 
 export default function RegistroMaclean() {
   const [formData, setFormData] = useState({
-    nombre: "",
+    nombreCompleto: "",
     correo: "",
+    contrasena: "",
     edad: "",
     celular: "",
   });
@@ -40,7 +41,7 @@ export default function RegistroMaclean() {
 
         // Guardar datos del usuario en localStorage para el dashboard
         localStorage.setItem('maclean_user', JSON.stringify({
-          nombre: formData.nombre,
+          nombre: formData.nombreCompleto,
           email: formData.correo,
           edad: formData.edad,
           celular: formData.celular,
@@ -96,15 +97,15 @@ export default function RegistroMaclean() {
           <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-2xl border border-yellow-500/20">
             <div className="space-y-6">
               <div>
-                <label htmlFor="nombre" className="block text-sm font-medium text-yellow-200 mb-2">
+                <label htmlFor="nombreCompleto" className="block text-sm font-medium text-yellow-200 mb-2">
                   Nombre Completo
                 </label>
                 <input
                   type="text"
-                  id="nombre"
-                  name="nombre"
+                  id="nombreCompleto"
+                  name="nombreCompleto"
                   placeholder="Ingresa tu nombre completo"
-                  value={formData.nombre}
+                  value={formData.nombreCompleto}
                   onChange={handleChange}
                   className="w-full px-4 py-3 bg-white/10 border border-yellow-400/30 rounded-xl text-white placeholder-yellow-300 outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-200"
                   required
@@ -124,6 +125,23 @@ export default function RegistroMaclean() {
                   onChange={handleChange}
                   className="w-full px-4 py-3 bg-white/10 border border-yellow-400/30 rounded-xl text-white placeholder-yellow-300 outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-200"
                   required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="contrasena" className="block text-sm font-medium text-yellow-200 mb-2">
+                  Contraseña
+                </label>
+                <input
+                  type="password"
+                  id="contrasena"
+                  name="contrasena"
+                  placeholder="Crea una contraseña segura"
+                  value={formData.contrasena}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-yellow-400/30 rounded-xl text-white placeholder-yellow-300 outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-200"
+                  required
+                  minLength={6}
                 />
               </div>
 

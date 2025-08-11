@@ -5,8 +5,9 @@ import Link from "next/link";
 
 export default function RegistroRunningPips() {
   const [formData, setFormData] = useState({
-    nombre: "",
+    nombreCompleto: "",
     correo: "",
+    contrasena: "",
     edad: "",
     celular: "",
   });
@@ -40,7 +41,7 @@ export default function RegistroRunningPips() {
 
         // Guardar datos del usuario en localStorage para el dashboard
         localStorage.setItem('runningpips_user', JSON.stringify({
-          nombre: formData.nombre,
+          nombre: formData.nombreCompleto,
           email: formData.correo,
           edad: formData.edad,
           celular: formData.celular,
@@ -96,15 +97,15 @@ export default function RegistroRunningPips() {
           <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-lg p-4 sm:p-8 rounded-2xl shadow-2xl border border-blue-500/20">
             <div className="space-y-4 sm:space-y-6">
               <div>
-                <label htmlFor="nombre" className="block text-sm font-medium text-blue-200 mb-2">
+                <label htmlFor="nombreCompleto" className="block text-sm font-medium text-blue-200 mb-2">
                   Nombre Completo
                 </label>
                 <input
                   type="text"
-                  id="nombre"
-                  name="nombre"
+                  id="nombreCompleto"
+                  name="nombreCompleto"
                   placeholder="Ingresa tu nombre completo"
-                  value={formData.nombre}
+                  value={formData.nombreCompleto}
                   onChange={handleChange}
                   className="w-full px-4 py-3 bg-white/10 border border-blue-400/30 rounded-xl text-white placeholder-blue-300 outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                   required
@@ -124,6 +125,23 @@ export default function RegistroRunningPips() {
                   onChange={handleChange}
                   className="w-full px-4 py-3 bg-white/10 border border-blue-400/30 rounded-xl text-white placeholder-blue-300 outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                   required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="contrasena" className="block text-sm font-medium text-blue-200 mb-2">
+                  Contraseña
+                </label>
+                <input
+                  type="password"
+                  id="contrasena"
+                  name="contrasena"
+                  placeholder="Crea una contraseña segura"
+                  value={formData.contrasena}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-blue-400/30 rounded-xl text-white placeholder-blue-300 outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                  required
+                  minLength={6}
                 />
               </div>
 

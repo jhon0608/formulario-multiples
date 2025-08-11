@@ -1,161 +1,205 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import clientPromise from '../../../../lib/mongodb';
+import { ObjectId } from 'mongodb';
 
-interface Registro {
-  id: string;
-  nombre: string;
+interface Usuario {
+  _id?: string;
+  id?: string;
   correo: string;
+  nombreCompleto: string;
+  contrasena: string;
   edad: string;
-  celular: string;
+  fechaInicio: Date;
+  fechaValidacion: Date; // 30 días después de fechaInicio
+  activado: boolean;
   plataforma: string;
-  fechaRegistro: string;
-  fechaContacto?: string | null;
-  fechaCierre?: string | null;
+  registradoPor: string; // Email del administrador que registró al usuario
+  created_at?: Date;
+  updated_at?: Date;
 }
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'registros.json');
-
-// Asegurar que el directorio data existe
-function ensureDataDir() {
-  const dataDir = path.join(process.cwd(), 'data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
+// Obtener la colección de usuarios
+async function getUsuariosCollection() {
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGODB_DB);
+  return db.collection('usuarios');
 }
 
-// Leer registros del archivo
-function readRegistros() {
-  ensureDataDir();
-  if (!fs.existsSync(DATA_FILE)) {
-    return [];
-  }
-  try {
-    const data = fs.readFileSync(DATA_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error leyendo registros:', error);
-    return [];
-  }
+// Función para calcular fecha de validación (30 días después)
+function calcularFechaValidacion(fechaInicio: Date): Date {
+  const fechaValidacion = new Date(fechaInicio);
+  fechaValidacion.setDate(fechaValidacion.getDate() + 30);
+  return fechaValidacion;
 }
 
-// Escribir registros al archivo
-function writeRegistros(registros: Registro[]) {
-  ensureDataDir();
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(registros, null, 2));
-  } catch (error) {
-    console.error('Error escribiendo registros:', error);
-  }
+// Función para verificar si el usuario está activo
+function isUsuarioActivo(usuario: any): boolean {
+  const ahora = new Date();
+  const fechaInicio = new Date(usuario.fechaInicio);
+  const fechaValidacion = new Date(usuario.fechaValidacion);
+
+  // Debe estar activado manualmente Y dentro del período válido
+  return usuario.activado &&
+         ahora >= fechaInicio &&
+         ahora <= fechaValidacion;
 }
 
-// GET - Obtener todos los registros
+// GET - Obtener todos los usuarios
 export async function GET() {
   try {
-    const registros = readRegistros();
-    return NextResponse.json(registros);
+    const collection = await getUsuariosCollection();
+    const usuarios = await collection.find({}).toArray();
+
+    // Convertir _id a string y agregar estado de activación
+    const usuariosFormateados = usuarios.map(usuario => ({
+      ...usuario,
+      _id: usuario._id.toString(),
+      id: usuario._id.toString(),
+      estadoActivo: isUsuarioActivo(usuario), // Calcular si está activo
+      // Para compatibilidad con el panel admin existente
+      nombre: usuario.nombreCompleto,
+      correo: usuario.correo,
+      plataforma: usuario.plataforma,
+      fechaRegistro: usuario.created_at ? new Date(usuario.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      estado: isUsuarioActivo(usuario) ? 'activo' : 'inactivo'
+    }));
+
+    return NextResponse.json(usuariosFormateados);
   } catch (error) {
-    return NextResponse.json({ error: 'Error obteniendo registros' }, { status: 500 });
+    console.error('Error obteniendo usuarios:', error);
+    return NextResponse.json({ error: 'Error obteniendo usuarios' }, { status: 500 });
   }
 }
 
-// POST - Crear nuevo registro
+// POST - Crear nuevo usuario
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { nombre, correo, edad, celular, plataforma } = body;
+    console.log('📝 Datos recibidos:', body);
+    const { nombreCompleto, correo, contrasena, edad, plataforma, registradoPor } = body;
 
-    // Validar datos requeridos
-    if (!nombre || !correo || !celular || !plataforma) {
-      return NextResponse.json({ error: 'Faltan datos requeridos' }, { status: 400 });
+    // Validar campos requeridos
+    if (!nombreCompleto || !correo || !contrasena || !edad || !plataforma) {
+      console.log('❌ Campos faltantes:', { nombreCompleto, correo, contrasena, edad, plataforma });
+      return NextResponse.json({ error: 'Todos los campos son requeridos' }, { status: 400 });
     }
 
-    const registros = readRegistros();
-    
-    // Crear nuevo registro
-    const nuevoRegistro = {
-      id: Date.now().toString(),
-      nombre,
+    const collection = await getUsuariosCollection();
+
+    // Verificar si el correo ya existe EN LA MISMA PLATAFORMA
+    console.log('🔍 Buscando usuario existente:', { correo, plataforma });
+    const existeCorreoPlataforma = await collection.findOne({
       correo,
-      edad: edad || '',
-      celular,
+      plataforma
+    });
+    console.log('📋 Usuario existente encontrado:', existeCorreoPlataforma);
+    if (existeCorreoPlataforma) {
+      console.log('❌ Usuario ya existe en esta plataforma');
+      return NextResponse.json({ error: 'El correo ya está registrado en esta plataforma' }, { status: 400 });
+    }
+
+    // Crear fechas
+    const fechaInicio = new Date();
+    const fechaValidacion = calcularFechaValidacion(fechaInicio);
+
+    // Crear nuevo usuario
+    const nuevoUsuario = {
+      correo,
+      nombreCompleto,
+      contrasena, // En producción, esto debería estar hasheado
+      edad,
+      fechaInicio,
+      fechaValidacion,
+      activado: body.activado !== undefined ? body.activado : false, // Usar el valor enviado o false por defecto
       plataforma,
-      estado: 'pendiente',
-      fechaRegistro: new Date().toISOString().split('T')[0],
-      fechaInicio: null,
-      fechaDesactivacion: null
+      registradoPor: registradoPor || 'macleanjhon8@gmail.com', // Admin principal por defecto
+      created_at: new Date(),
+      updated_at: new Date()
     };
 
-    registros.push(nuevoRegistro);
-    writeRegistros(registros);
+    console.log('💾 Creando usuario:', nuevoUsuario);
+    const resultado = await collection.insertOne(nuevoUsuario);
+    console.log('✅ Usuario creado con ID:', resultado.insertedId);
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Registro creado exitosamente',
-      registro: nuevoRegistro 
-    });
+    return NextResponse.json({
+      success: true,
+      message: 'Usuario registrado exitosamente',
+      usuario: {
+        ...nuevoUsuario,
+        id: resultado.insertedId.toString(),
+        _id: undefined,
+        fechaInicio: fechaInicio.toISOString(),
+        fechaValidacion: fechaValidacion.toISOString()
+      }
+    }, { status: 201 });
+
   } catch (error) {
-    console.error('Error creando registro:', error);
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+    console.error('Error creando usuario:', error);
+    return NextResponse.json({ error: 'Error creando usuario' }, { status: 500 });
   }
 }
 
-// PUT - Actualizar registro existente
+// PUT - Actualizar usuario existente (activar/desactivar)
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, estado, fechaInicio, fechaDesactivacion, ...otrosCampos } = body;
+    const { id, activado, ...otrosCampos } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'ID es requerido' }, { status: 400 });
     }
 
-    const registros = readRegistros();
-    const index = registros.findIndex((r: Registro) => r.id === id);
+    const collection = await getUsuariosCollection();
+    const objectId = new ObjectId(id);
 
-    if (index === -1) {
-      return NextResponse.json({ error: 'Registro no encontrado' }, { status: 404 });
+    // Buscar el usuario existente
+    const usuarioExistente = await collection.findOne({ _id: objectId });
+
+    if (!usuarioExistente) {
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
-    // Si se está actualizando solo el estado
-    if (estado && !fechaInicio && !fechaDesactivacion) {
-      registros[index].estado = estado;
+    // Preparar la actualización
+    let updateData: any = {
+      ...otrosCampos,
+      updated_at: new Date()
+    };
 
-      if (estado === 'activo' && !registros[index].fechaInicio) {
-        registros[index].fechaInicio = new Date().toISOString().split('T')[0];
-      }
-
-      if (estado === 'inactivo') {
-        registros[index].fechaDesactivacion = new Date().toISOString().split('T')[0];
-      }
-    } else {
-      // Actualización completa del registro (incluyendo fechas manuales)
-      registros[index] = {
-        ...registros[index],
-        ...otrosCampos,
-        fechaInicio: fechaInicio !== undefined ? fechaInicio : registros[index].fechaInicio,
-        fechaDesactivacion: fechaDesactivacion !== undefined ? fechaDesactivacion : registros[index].fechaDesactivacion,
-      };
-
-      if (estado) {
-        registros[index].estado = estado;
-      }
+    // Actualizar estado de activación
+    if (activado !== undefined) {
+      updateData.activado = activado;
     }
 
-    writeRegistros(registros);
+    // Actualizar en MongoDB
+    const result = await collection.updateOne(
+      { _id: objectId },
+      { $set: updateData }
+    );
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+    }
+
+    // Obtener el usuario actualizado
+    const usuarioActualizado = await collection.findOne({ _id: objectId });
 
     return NextResponse.json({
       success: true,
-      message: 'Registro actualizado exitosamente',
-      registro: registros[index]
+      message: 'Usuario actualizado exitosamente',
+      usuario: {
+        ...usuarioActualizado,
+        id: usuarioActualizado?._id.toString(),
+        _id: undefined,
+        estadoActivo: isUsuarioActivo(usuarioActualizado)
+      }
     });
   } catch (error) {
-    console.error('Error actualizando registro:', error);
+    console.error('Error actualizando usuario:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
 
-// DELETE - Eliminar registro
+// DELETE - Eliminar usuario
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -165,21 +209,21 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'ID es requerido' }, { status: 400 });
     }
 
-    const registros = readRegistros();
-    const filteredRegistros = registros.filter((r: Registro) => r.id !== id);
+    const collection = await getUsuariosCollection();
+    const objectId = new ObjectId(id);
 
-    if (filteredRegistros.length === registros.length) {
-      return NextResponse.json({ error: 'Registro no encontrado' }, { status: 404 });
+    const result = await collection.deleteOne({ _id: objectId });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
-    writeRegistros(filteredRegistros);
-
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Registro eliminado exitosamente' 
+    return NextResponse.json({
+      success: true,
+      message: 'Usuario eliminado exitosamente'
     });
   } catch (error) {
-    console.error('Error eliminando registro:', error);
+    console.error('Error eliminando usuario:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
