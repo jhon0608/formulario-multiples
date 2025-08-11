@@ -206,7 +206,7 @@ export default function Home() {
                     Registrarse
                   </Link>
                   <Link
-                    href="/ricardo"
+                    href="/sub-admin/dashboard"
                     className="flex-1 inline-flex items-center justify-center rounded-xl bg-white/20 px-4 py-3 text-base font-semibold text-white transition-all duration-200 hover:bg-white/30 border border-white/30"
                   >
                     Acceder
