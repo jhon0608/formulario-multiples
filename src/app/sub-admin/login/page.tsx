@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { APP_CONFIG } from "../../../config/app";
 
 export default function SubAdminLogin() {
   const [email, setEmail] = useState("");
@@ -16,11 +17,11 @@ export default function SubAdminLogin() {
     setError("");
 
     // Verificar credenciales específicas para Ricardo
-    if (email === "ricardo.prescott@gmail.com" && password === "Ricardo2024!") {
+    if (email === APP_CONFIG.SUB_ADMIN.EMAIL && password === APP_CONFIG.SUB_ADMIN.PASSWORD) {
       // Guardar sesión de sub-admin
       localStorage.setItem("subAdminUser", email);
       localStorage.setItem("subAdminName", "Ricardo Orlando Prescott Arias");
-      router.push("/sub-admin/dashboard");
+      router.push(APP_CONFIG.ROUTES.SUB_ADMIN_DASHBOARD);
     } else {
       setError("Credenciales incorrectas. Solo usuarios autorizados pueden acceder.");
     }

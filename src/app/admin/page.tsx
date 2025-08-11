@@ -13,7 +13,7 @@ interface Usuario {
   fechaInicio: string;
   fechaVencimiento: string;
   fechaValidacion: string;
-  registradoPor: string;
+  registradoPor?: string; // Opcional para compatibilidad
   created_at: string;
 }
 
