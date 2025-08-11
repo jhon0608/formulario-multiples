@@ -32,8 +32,13 @@ export const APP_CONFIG = {
   
   // Admin Principal
   ADMIN: {
-    EMAIL: process.env.ADMIN_EMAIL || 'macleanjhon8@gmail.com',
-  }
+    EMAIL: 'macleanjhon8@gmail.com', // Admin principal fijo
+  },
+
+  // Lista de administradores autorizados
+  ADMIN_EMAILS: [
+    'macleanjhon8@gmail.com', // Admin principal
+  ]
 };
 
 // Helper para construir URLs completas
