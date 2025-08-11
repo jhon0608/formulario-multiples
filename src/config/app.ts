@@ -1,8 +1,8 @@
 // Configuración de la aplicación
 export const APP_CONFIG = {
   // URLs base según el entorno
-  BASE_URL: process.env.NODE_ENV === 'production' 
-    ? 'https://tudominio.com'  // 👈 CAMBIAR POR TU DOMINIO REAL
+  BASE_URL: process.env.NODE_ENV === 'production'
+    ? 'https://www.formularioelite.store'
     : 'http://localhost:3002',
   
   // Rutas de la aplicación
