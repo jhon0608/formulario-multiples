@@ -198,12 +198,20 @@ export default function Home() {
                     Activación prioritaria
                   </li>
                 </ul>
-                <Link
-                  href="/ricardo"
-                  className="w-full inline-flex items-center justify-center rounded-xl bg-white px-4 py-3 text-base font-semibold text-green-600 transition-all duration-200 hover:bg-green-50 hover:scale-105"
-                >
-                  Acceder al Registro
-                </Link>
+                <div className="flex gap-3">
+                  <Link
+                    href="/ricardo"
+                    className="flex-1 inline-flex items-center justify-center rounded-xl bg-white px-4 py-3 text-base font-semibold text-green-600 transition-all duration-200 hover:bg-green-50 hover:scale-105"
+                  >
+                    Registrarse
+                  </Link>
+                  <Link
+                    href="/ricardo"
+                    className="flex-1 inline-flex items-center justify-center rounded-xl bg-white/20 px-4 py-3 text-base font-semibold text-white transition-all duration-200 hover:bg-white/30 border border-white/30"
+                  >
+                    Acceder
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
