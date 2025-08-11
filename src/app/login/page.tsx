@@ -16,56 +16,43 @@ export default function Login() {
     setIsLoading(true);
     setError("");
 
-    try {
-      // Verificar credenciales usando la API
-      const response = await fetch('/api/admin/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email.trim(),
-          password: password.trim()
-        }),
-      });
+    const adminEmail = "macleanjhon8@gmail.com";
+    const adminPassword = "Ooomy2808.";
 
-      const data = await response.json();
+    const emailMatch = email.trim() === adminEmail;
+    const passwordMatch = password.trim() === adminPassword;
 
-      if (response.ok && data.success && data.isAdmin) {
-        console.log("✅ Credenciales correctas, redirigiendo...");
+    if (emailMatch && passwordMatch) {
+      console.log("✅ Credenciales correctas, redirigiendo...");
 
-        // Actualizar datos existentes para marcar como admin
-        const macleanUser = localStorage.getItem('maclean_user');
-        if (macleanUser) {
-          const userData = JSON.parse(macleanUser);
-          if (userData.email === data.email) {
-            userData.isAdmin = true;
-            localStorage.setItem('maclean_user', JSON.stringify(userData));
-          }
+      // Actualizar datos existentes para marcar como admin
+      const macleanUser = localStorage.getItem('maclean_user');
+      if (macleanUser) {
+        const userData = JSON.parse(macleanUser);
+        if (userData.email === adminEmail) {
+          userData.isAdmin = true;
+          localStorage.setItem('maclean_user', JSON.stringify(userData));
         }
-
-        const runningpipsUser = localStorage.getItem('runningpips_user');
-        if (runningpipsUser) {
-          const userData = JSON.parse(runningpipsUser);
-          if (userData.email === data.email) {
-            userData.isAdmin = true;
-            localStorage.setItem('runningpips_user', JSON.stringify(userData));
-          }
-        }
-
-        // Guardar sesión de admin
-        localStorage.setItem("adminUser", data.email);
-        localStorage.setItem("isAuthenticated", "true");
-
-        // Redirigir al panel de admin
-        router.push("/admin");
-      } else {
-        console.log("❌ Credenciales incorrectas");
-        setError(data.message || "Credenciales incorrectas. Verifica tu email y contraseña.");
       }
-    } catch (error) {
-      console.error('Error en login:', error);
-      setError("Error de conexión. Por favor intenta de nuevo.");
+
+      const runningpipsUser = localStorage.getItem('runningpips_user');
+      if (runningpipsUser) {
+        const userData = JSON.parse(runningpipsUser);
+        if (userData.email === adminEmail) {
+          userData.isAdmin = true;
+          localStorage.setItem('runningpips_user', JSON.stringify(userData));
+        }
+      }
+
+      // Guardar sesión de admin
+      localStorage.setItem("adminUser", email);
+      localStorage.setItem("isAuthenticated", "true");
+
+      // Redirigir al panel de admin
+      router.push("/admin");
+    } else {
+      console.log("❌ Credenciales incorrectas");
+      setError("Credenciales incorrectas. Verifica tu email y contraseña.");
     }
 
     setIsLoading(false);
