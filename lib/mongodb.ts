@@ -7,8 +7,16 @@ interface GlobalMongo {
 
 const g = global as typeof globalThis & GlobalMongo;
 
-const uri = process.env.MONGODB_URI;
-const dbName = process.env.MONGODB_DB;
+// Configuración con fallback para producción
+const uri = process.env.MONGODB_URI ||
+  (process.env.NODE_ENV === 'production'
+    ? 'mongodb+srv://macleanjhon8:Ooomy2808.@cluster0.3wxjduk.mongodb.net/formulario-elite?retryWrites=true&w=majority&appName=Cluster0'
+    : undefined);
+
+const dbName = process.env.MONGODB_DB ||
+  (process.env.NODE_ENV === 'production'
+    ? 'formulario-elite'
+    : undefined);
 
 async function connect(): Promise<MongoClient> {
   if (g._mongoClientPromise) return g._mongoClientPromise;
