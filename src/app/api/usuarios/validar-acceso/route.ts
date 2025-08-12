@@ -1,38 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { APP_CONFIG } from '../../../../config/app';
 
-interface Usuario {
-  _id?: string;
-  correo: string;
-  nombreCompleto: string;
-  nombre?: string;
-  edad: string;
-  celular?: string;
-  fechaRegistro?: string;
-  fechaInicio: Date | string;
-  fechaValidacion: Date | string;
-  activado: boolean;
-  plataforma: string;
-}
+
 
 interface Body {
   correo?: string;
+  contrasena?: string;
   plataforma?: string;
 }
 
-function isUsuarioActivo(usuario: Usuario): boolean {
-  if (!usuario || !usuario.activado) return false;
-  const ahora = new Date();
-  const fechaInicio = new Date(usuario.fechaInicio);
-  const fechaValidacion = new Date(usuario.fechaValidacion);
-  return ahora >= fechaInicio && ahora <= fechaValidacion;
-}
+
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
-  console.log('HIT validar-acceso'); // <== debe verse en logs
+  console.log('=== VALIDAR ACCESO (SIN BD) ===');
   try {
     let body: Body;
     try {
@@ -44,79 +27,65 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { correo, plataforma } = body;
+    const { correo, contrasena } = body;
 
-    if (!correo || !plataforma) {
+    if (!correo || !contrasena) {
       return NextResponse.json(
-        { success: false, message: 'Correo y plataforma son requeridos' },
+        { success: false, message: 'Correo y contraseña son requeridos' },
         { status: 400 }
       );
     }
 
-    let db;
-    try {
-      db = await getDb();
-    } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : 'Error desconocido';
-      console.error('DB_INIT_ERROR', errorMessage);
-      return NextResponse.json(
-        { success: false, message: 'Error de configuración de base de datos' },
-        { status: 500 }
-      );
+    const correoLower = correo.toLowerCase().trim();
+    console.log('VALIDATING_USER', { correo: correoLower });
+
+    // Verificar credenciales contra la configuración
+    const { USERS } = APP_CONFIG;
+    let usuarioValido = null;
+    let isAdmin = false;
+
+    // Verificar Admin Principal (Jhon)
+    if (correoLower === USERS.ADMIN.EMAIL.toLowerCase() && contrasena === USERS.ADMIN.PASSWORD) {
+      usuarioValido = USERS.ADMIN;
+      isAdmin = true;
     }
-    const collection = db.collection('usuarios');
+    // Verificar Sub-Admin (Ricardo)
+    else if (correoLower === USERS.SUB_ADMIN.EMAIL.toLowerCase() && contrasena === USERS.SUB_ADMIN.PASSWORD) {
+      usuarioValido = USERS.SUB_ADMIN;
+      isAdmin = true;
+    }
 
-    const correoLower = correo.toLowerCase();
+    if (!usuarioValido) {
+      console.log('INVALID_CREDENTIALS', { correo: correoLower });
+      return NextResponse.json({
+        success: false,
+        message: 'Credenciales incorrectas'
+      }, { status: 401 });
+    }
 
-    const usuario = await collection.findOne<Usuario>({
+    console.log('USER_VALIDATED', {
       correo: correoLower,
-      plataforma
-    });
-
-    if (!usuario) {
-      const plataformaNombre = plataforma === 'runningpips'
-        ? 'RunningPips Academy'
-        : 'IA Maclean';
-      return NextResponse.json(
-        { success: false, message: `No encontramos tu registro. ¿Ya te registraste en ${plataformaNombre}?` },
-        { status: 404 }
-      );
-    }
-
-    if (!isUsuarioActivo(usuario)) {
-      return NextResponse.json(
-        { success: false, message: 'Tu período de acceso ha expirado. Contacta al administrador para renovar.' },
-        { status: 403 }
-      );
-    }
-
-    const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
-    const isAdmin = adminEmail ? correoLower === adminEmail : false;
-
-    console.log('ENV_CHECK', {
-      adminEmail: process.env.ADMIN_EMAIL,
-      db: process.env.MONGODB_DB,
-      hasUri: !!process.env.MONGODB_URI,
-      nodeEnv: process.env.NODE_ENV
+      nombre: usuarioValido.NAME,
+      isAdmin
     });
 
     return NextResponse.json({
       success: true,
       message: 'Acceso autorizado',
       usuario: {
-        id: usuario._id?.toString(),
-        correo: usuario.correo,
-        nombre: usuario.nombre,
-        nombreCompleto: usuario.nombreCompleto,
-        edad: usuario.edad,
-        celular: usuario.celular,
-        fechaRegistro: usuario.fechaRegistro,
-        plataforma: usuario.plataforma,
+        id: `user_${Date.now()}`,
+        correo: usuarioValido.EMAIL,
+        nombre: usuarioValido.NAME.split(' ')[0],
+        nombreCompleto: usuarioValido.NAME,
+        edad: '30',
+        celular: '',
+        fechaRegistro: new Date().toISOString(),
+        plataforma: 'sistema',
         isAdmin
       }
     });
   } catch (err) {
     console.error('ROUTE_FATAL', err);
-    return NextResponse.json({ success:false, message:'Error interno' }, { status:500 });
+    return NextResponse.json({ success: false, message: 'Error interno' }, { status: 500 });
   }
 }
