@@ -39,3 +39,4 @@ export async function getDb(): Promise<Db> {
   if (!dbName) throw new Error('MONGODB_DB no definida');
   return client.db(dbName);
 }
+export default getDb;
