@@ -28,7 +28,11 @@ function isUsuarioActivo(usuario: Usuario): boolean {
   return ahora >= fechaInicio && ahora <= fechaValidacion;
 }
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
+  console.log('HIT validar-acceso'); // <== debe verse en logs
   try {
     let body: Body;
     try {
@@ -111,10 +115,7 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (err) {
-    console.error('Error validando acceso:', err);
-    return NextResponse.json(
-      { success: false, message: 'Error interno del servidor' },
-      { status: 500 }
-    );
+    console.error('ROUTE_FATAL', err);
+    return NextResponse.json({ success:false, message:'Error interno' }, { status:500 });
   }
 }
