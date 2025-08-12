@@ -71,14 +71,20 @@ export async function GET() {
 // POST
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== REGISTRO POST REQUEST ===');
     const body = await request.json();
+    console.log('Request body:', body);
+
     const { nombreCompleto, correo, contrasena, edad, plataforma, registradoPor, activado } = body;
 
     if (!nombreCompleto || !correo || !contrasena || !edad || !plataforma) {
+      console.log('❌ Campos faltantes');
       return NextResponse.json({ error: 'Todos los campos son requeridos' }, { status: 400 });
     }
 
+    console.log('✅ Intentando obtener colección de usuarios...');
     const collection = await getUsuariosCollection();
+    console.log('✅ Colección obtenida exitosamente');
 
     const existente = await collection.findOne({ correo, plataforma });
     if (existente) {
@@ -111,8 +117,18 @@ export async function POST(request: NextRequest) {
       usuario: formatear(nuevo)
     }, { status: 201 });
   } catch (e) {
-    console.error('POST usuario error', e);
-    return NextResponse.json({ error: 'Error creando usuario' }, { status: 500 });
+    console.error('❌ POST usuario error:', {
+      message: e instanceof Error ? e.message : 'Error desconocido',
+      stack: e instanceof Error ? e.stack : undefined,
+      error: e
+    });
+
+    const errorMessage = e instanceof Error ? e.message : 'Error desconocido';
+    return NextResponse.json({
+      error: 'Error creando usuario',
+      details: errorMessage,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }
 
