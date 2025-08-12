@@ -1,32 +1,41 @@
 import { MongoClient, Db } from 'mongodb';
 
-const uri = process.env.MONGODB_URI;
-const dbName = process.env.MONGODB_DB;
-
-if (!uri) throw new Error('MONGODB_URI no definida en variables de entorno');
-if (!dbName) throw new Error('MONGODB_DB no definida en variables de entorno');
-
 interface GlobalMongo {
+  _mongoClient?: MongoClient;
   _mongoClientPromise?: Promise<MongoClient>;
 }
 
-const globalForMongo = global as typeof globalThis & GlobalMongo;
+const g = global as typeof globalThis & GlobalMongo;
 
-let clientPromise: Promise<MongoClient>;
+const uri = process.env.MONGODB_URI;
+const dbName = process.env.MONGODB_DB;
 
-if (!globalForMongo._mongoClientPromise) {
+async function connect(): Promise<MongoClient> {
+  if (g._mongoClientPromise) return g._mongoClientPromise;
+  if (!uri || !dbName) {
+    const missing = {
+      hasUri: !!uri,
+      hasDb: !!dbName
+    };
+    console.error('Mongo env missing', missing);
+    throw new Error('Configuración Mongo incompleta (revisa variables de entorno)');
+  }
   const client = new MongoClient(uri);
-  globalForMongo._mongoClientPromise = client.connect().catch(err => {
-    console.error('Fallo conexión Mongo:', err);
-    throw err;
-  });
+  g._mongoClientPromise = client.connect()
+    .then(c => {
+      g._mongoClient = c;
+      return c;
+    })
+    .catch(err => {
+      console.error('Fallo conexión Mongo:', err);
+      g._mongoClientPromise = undefined;
+      throw err;
+    });
+  return g._mongoClientPromise;
 }
-
-clientPromise = globalForMongo._mongoClientPromise;
 
 export async function getDb(): Promise<Db> {
-  const client = await clientPromise;
+  const client = await connect();
+  if (!dbName) throw new Error('MONGODB_DB no definida');
   return client.db(dbName);
 }
-
-export default clientPromise;

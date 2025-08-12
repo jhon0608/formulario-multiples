@@ -49,7 +49,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const db = await getDb();
+    let db;
+    try {
+      db = await getDb();
+    } catch (e: any) {
+      console.error('DB_INIT_ERROR', e.message);
+      return NextResponse.json(
+        { success: false, message: 'Error de configuración de base de datos' },
+        { status: 500 }
+      );
+    }
     const collection = db.collection('usuarios');
 
     const correoLower = correo.toLowerCase();
