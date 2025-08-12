@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '../../../../../lib/mongodb';
+import { getDb } from '../../../../../lib/mongodb';
 
 interface Usuario {
   _id?: string;
@@ -9,28 +9,38 @@ interface Usuario {
   edad: string;
   celular?: string;
   fechaRegistro?: string;
-  fechaInicio: Date;
-  fechaValidacion: Date;
+  fechaInicio: Date | string;
+  fechaValidacion: Date | string;
   activado: boolean;
   plataforma: string;
 }
 
-// Función para verificar si un usuario está activo
-function isUsuarioActivo(usuario: Usuario): boolean {
-  if (!usuario || !usuario.activado) {
-    return false;
-  }
+interface Body {
+  correo?: string;
+  plataforma?: string;
+}
 
+function isUsuarioActivo(usuario: Usuario): boolean {
+  if (!usuario || !usuario.activado) return false;
   const ahora = new Date();
   const fechaInicio = new Date(usuario.fechaInicio);
   const fechaValidacion = new Date(usuario.fechaValidacion);
-
   return ahora >= fechaInicio && ahora <= fechaValidacion;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { correo, plataforma } = await request.json();
+    let body: Body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, message: 'JSON inválido' },
+        { status: 400 }
+      );
+    }
+
+    const { correo, plataforma } = body;
 
     if (!correo || !plataforma) {
       return NextResponse.json(
@@ -39,51 +49,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB);
+    const db = await getDb();
     const collection = db.collection('usuarios');
 
-    // Buscar el usuario
-    const usuario = await collection.findOne({
-      correo: correo.toLowerCase(),
-      plataforma: plataforma
+    const correoLower = correo.toLowerCase();
+
+    const usuario = await collection.findOne<Usuario>({
+      correo: correoLower,
+      plataforma
     });
 
     if (!usuario) {
-      const plataformaNombre = plataforma === 'runningpips' ? 'RunningPips Academy' : 'IA Maclean';
+      const plataformaNombre = plataforma === 'runningpips'
+        ? 'RunningPips Academy'
+        : 'IA Maclean';
       return NextResponse.json(
         { success: false, message: `No encontramos tu registro. ¿Ya te registraste en ${plataformaNombre}?` },
         { status: 404 }
       );
     }
 
-    // Verificar si el usuario está activo
-    const usuarioTyped = usuario as unknown as Usuario;
-    if (!isUsuarioActivo(usuarioTyped)) {
+    if (!isUsuarioActivo(usuario)) {
       return NextResponse.json(
-        { success: false, message: 'Tu período de acceso ha expirado. Contacta al administrador para renovar tu suscripción.' },
+        { success: false, message: 'Tu período de acceso ha expirado. Contacta al administrador para renovar.' },
         { status: 403 }
       );
     }
 
-    // Usuario válido y activo
+    const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+    const isAdmin = adminEmail ? correoLower === adminEmail : false;
+
+    console.log('ENV_CHECK', {
+      adminEmail: process.env.ADMIN_EMAIL,
+      db: process.env.MONGODB_DB,
+      hasUri: !!process.env.MONGODB_URI,
+      nodeEnv: process.env.NODE_ENV
+    });
+
     return NextResponse.json({
       success: true,
       message: 'Acceso autorizado',
       usuario: {
-        id: usuario._id.toString(),
+        id: usuario._id?.toString(),
         correo: usuario.correo,
         nombre: usuario.nombre,
         nombreCompleto: usuario.nombreCompleto,
         edad: usuario.edad,
         celular: usuario.celular,
         fechaRegistro: usuario.fechaRegistro,
-        plataforma: usuario.plataforma
+        plataforma: usuario.plataforma,
+        isAdmin
       }
     });
-
-  } catch (error) {
-    console.error('Error validando acceso:', error);
+  } catch (err) {
+    console.error('Error validando acceso:', err);
     return NextResponse.json(
       { success: false, message: 'Error interno del servidor' },
       { status: 500 }

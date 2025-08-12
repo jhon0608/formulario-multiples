@@ -1,35 +1,32 @@
-import { MongoClient } from 'mongodb'
+import { MongoClient, Db } from 'mongodb';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your MONGODB_URI to .env.local')
+const uri = process.env.MONGODB_URI;
+const dbName = process.env.MONGODB_DB;
+
+if (!uri) throw new Error('MONGODB_URI no definida en variables de entorno');
+if (!dbName) throw new Error('MONGODB_DB no definida en variables de entorno');
+
+interface GlobalMongo {
+  _mongoClientPromise?: Promise<MongoClient>;
 }
 
-if (!process.env.MONGODB_DB) {
-  throw new Error('Please add your MONGODB_DB to .env.local')
+const globalForMongo = global as typeof globalThis & GlobalMongo;
+
+let clientPromise: Promise<MongoClient>;
+
+if (!globalForMongo._mongoClientPromise) {
+  const client = new MongoClient(uri);
+  globalForMongo._mongoClientPromise = client.connect().catch(err => {
+    console.error('Fallo conexión Mongo:', err);
+    throw err;
+  });
 }
 
-const uri = process.env.MONGODB_URI
-const options = {}
+clientPromise = globalForMongo._mongoClientPromise;
 
-let client: MongoClient
-let clientPromise: Promise<MongoClient>
-
-if (process.env.NODE_ENV === 'development') {
-  // En desarrollo, usa una variable global para preservar el valor
-  const globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>
-  }
-
-  if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri, options)
-    globalWithMongo._mongoClientPromise = client.connect()
-  }
-  clientPromise = globalWithMongo._mongoClientPromise
-} else {
-  // En producción
-  client = new MongoClient(uri, options)
-  clientPromise = client.connect()
+export async function getDb(): Promise<Db> {
+  const client = await clientPromise;
+  return client.db(dbName);
 }
 
-export default clientPromise
-export { client }
+export default clientPromise;
