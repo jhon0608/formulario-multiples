@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '../../../../lib/mongodb';
+import { getDb } from '../../../../lib/mongodb';
 
 // Obtener la colección de usuarios
 async function getUsuariosCollection() {
-  const client = await clientPromise;
-  const db = client.db(process.env.MONGODB_DB);
+  const db = await getDb();
   return db.collection('usuarios');
 }
 

@@ -56,8 +56,9 @@ export async function POST(request: NextRequest) {
     let db;
     try {
       db = await getDb();
-    } catch (e: any) {
-      console.error('DB_INIT_ERROR', e.message);
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Error desconocido';
+      console.error('DB_INIT_ERROR', errorMessage);
       return NextResponse.json(
         { success: false, message: 'Error de configuración de base de datos' },
         { status: 500 }
