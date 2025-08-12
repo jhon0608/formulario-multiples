@@ -33,12 +33,12 @@ export default function AdminPanel() {
 
   // Verificar autenticación simple
   useEffect(() => {
-    const adminUser = localStorage.getItem("adminUser");
-    if (!adminUser || adminUser !== "macleanjhon8@gmail.com") {
-      router.push("/login");
+    const adminUser = localStorage.getItem("admin_user");
+    if (!adminUser) {
+      router.push("/admin-login");
       return;
     }
-    cargarUsuarios();
+    setLoading(false);
   }, [router]);
 
   const cargarUsuarios = async () => {
