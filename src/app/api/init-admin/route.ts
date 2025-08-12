@@ -4,6 +4,55 @@ import { getDb } from '../../../../lib/mongodb';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+// GET - Diagnóstico de configuración
+export async function GET() {
+  try {
+    console.log('=== DIAGNÓSTICO DE CONFIGURACIÓN ===');
+
+    const envCheck = {
+      NODE_ENV: process.env.NODE_ENV,
+      hasMongoUri: !!process.env.MONGODB_URI,
+      hasMongoDb: !!process.env.MONGODB_DB,
+      mongoDbName: process.env.MONGODB_DB,
+      adminEmail: process.env.ADMIN_EMAIL,
+      timestamp: new Date().toISOString()
+    };
+
+    console.log('ENV_VARS:', envCheck);
+
+    // Intentar conectar a la base de datos
+    let dbStatus = 'ERROR';
+    let dbError = null;
+
+    try {
+      const db = await getDb();
+      const collections = await db.listCollections().toArray();
+      dbStatus = 'CONECTADO';
+      console.log('DB_COLLECTIONS:', collections.map(c => c.name));
+    } catch (error) {
+      dbError = error instanceof Error ? error.message : 'Error desconocido';
+      console.error('DB_CONNECTION_ERROR:', dbError);
+    }
+
+    return NextResponse.json({
+      success: true,
+      diagnostico: {
+        ...envCheck,
+        dbStatus,
+        dbError
+      }
+    });
+
+  } catch (error) {
+    console.error('DIAGNOSTIC_ERROR:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Error en diagnóstico',
+      details: error instanceof Error ? error.message : 'Error desconocido'
+    }, { status: 500 });
+  }
+}
+
 // POST - Crear usuario administrador inicial
 export async function POST() {
   try {
