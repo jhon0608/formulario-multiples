@@ -21,23 +21,28 @@ export const APP_CONFIG = {
     MIGRAR_REGISTRADOR: '/api/migrar-registrador',
   },
   
-  // Credenciales de Sub-Admin (en producción deberían venir de variables de entorno)
-  SUB_ADMIN: {
-    EMAIL: process.env.SUB_ADMIN_EMAIL || 'ricardo.prescott@gmail.com',
-    // En producción, la password debería estar hasheada y verificada contra base de datos
-    PASSWORD: process.env.NODE_ENV === 'production' 
-      ? process.env.SUB_ADMIN_PASSWORD || 'Ricardo2024!'
-      : 'Ricardo2024!',
-  },
-  
-  // Admin Principal
-  ADMIN: {
-    EMAIL: 'macleanjhon8@gmail.com', // Admin principal fijo
+  // Sistema de usuarios sin base de datos
+  USERS: {
+    // Admin Principal - Jhon
+    ADMIN: {
+      EMAIL: 'macleanjhon8@gmail.com',
+      PASSWORD: 'Ooomy2808.',
+      NAME: 'Jhon Maclean',
+      ROLE: 'admin'
+    },
+    // Sub-Admin - Ricardo
+    SUB_ADMIN: {
+      EMAIL: 'ricardo.prescott@gmail.com',
+      PASSWORD: 'Ricardo2024!',
+      NAME: 'Ricardo Prescott',
+      ROLE: 'sub-admin'
+    }
   },
 
   // Lista de administradores autorizados
   ADMIN_EMAILS: [
-    'macleanjhon8@gmail.com', // Admin principal
+    'macleanjhon8@gmail.com', // Admin principal - Jhon
+    'ricardo.prescott@gmail.com' // Sub-admin - Ricardo
   ]
 };
 

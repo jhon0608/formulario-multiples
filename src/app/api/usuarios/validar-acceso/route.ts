@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '../../../../../lib/mongodb';
+import { APP_CONFIG } from '../../../../config/app';
 
 interface Usuario {
   _id?: string;
